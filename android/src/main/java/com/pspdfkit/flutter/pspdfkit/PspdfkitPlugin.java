@@ -10,6 +10,7 @@ package com.pspdfkit.flutter.pspdfkit;
 
 import static android.content.ContentValues.TAG;
 import static com.pspdfkit.flutter.pspdfkit.util.PdfUtils.convertPathToUri;
+import static com.pspdfkit.flutter.pspdfkit.util.PdfUtils.getThumbnail;
 import static com.pspdfkit.flutter.pspdfkit.util.PdfUtils.mergePdf;
 import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireDocumentNotNull;
 import static com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty;
@@ -191,7 +192,11 @@ public class PspdfkitPlugin
                     result.error("PSPDFKitException", e.getMessage(), null);
                 }
                 break;
-
+            case "getThumbnail":
+                final String path= call.argument("documentPath");
+                final String thumbnailPath=call.argument("thumbnailPath");
+                String thumbnailData = getThumbnail(path,activityPluginBinding.getActivity(),thumbnailPath);
+                result.success(thumbnailData);
             case "mergePdfs":
 
                 final List<String> pdfPaths= call.argument("listOfPdf");

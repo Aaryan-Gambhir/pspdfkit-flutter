@@ -123,6 +123,22 @@ class PspdfkitProcessor {
     }
   }
 
+  Future<dynamic> getThumbnail(String pdfPath, String thumbnailPath) async {
+    try {
+      dynamic thumbnail =
+          await _channel.invokeMethod('getThumbnail', <String, dynamic>{
+        'documentPath': pdfPath,
+        'thumbnailPath': thumbnailPath,
+      });
+      return thumbnail;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return "";
+    }
+  }
+
   /// Generates a PDF from HTML URI.
   /// [htmlUri]: The URI to the HTML file to be converted to PDF. The URI can be for a local file or a remote file.
   /// [outPutFile]: The path to the output file.

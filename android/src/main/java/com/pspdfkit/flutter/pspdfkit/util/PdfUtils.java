@@ -12,6 +12,8 @@ import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.utils.Size;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,6 +21,43 @@ import java.util.List;
 import java.util.Set;
 
 public class PdfUtils {
+    public static String getThumbnail(String documentPath,Context context,String thumbnailPath){
+        PdfDocument newDoc = null;
+        Uri uri=convertPathToUri(documentPath);
+        try {
+            newDoc = PdfDocumentLoader.openDocument(context,uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final Size pageSize = newDoc.getPageSize(0);
+        final int width = 840;
+        final int height = (int) (pageSize.height * (width / pageSize.width));
+        Bitmap pageBitmap = newDoc.renderPageToBitmap(context, 0, width, height);
+        File fileA=new File(thumbnailPath);
+        FileOutputStream fileStream = null;
+        try {
+            fileStream = new FileOutputStream(fileA);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+
+            fileStream.write(ImageUtils.convert(pageBitmap));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }finally {
+            try {
+                fileStream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return fileA.getPath();
+    }
     public static  ArrayList<byte[]> getPages(String docuPath,Context context){
         PdfDocument newDoc = null;
         ArrayList<byte[]> pageList =new ArrayList();
@@ -77,14 +116,12 @@ public class PdfUtils {
         final List<PdfDocument> documents = new ArrayList<>();
         for(String path : pdfPaths){
             try{
-
                 final PdfDocument temp =  PdfDocumentLoader.openDocument(context,
                         convertPathToUri(path));
                 documents.add(temp);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
         final PdfProcessorTask task = PdfProcessorTask.empty();
         int totalPageCount = 0;
@@ -101,6 +138,7 @@ public class PdfUtils {
         PdfProcessor.processDocument(task, outputFile);
         return outputFile.getPath();
     }
+
     public static Uri convertPathToUri(String pdfString){
         Uri uri=Uri.fromFile(new File(pdfString));
         return uri;

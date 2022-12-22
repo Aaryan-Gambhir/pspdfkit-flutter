@@ -21,7 +21,6 @@ public class ImageUtils
     {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-
         return outputStream.toByteArray();
     }
 
