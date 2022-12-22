@@ -75,6 +75,54 @@ class PspdfkitProcessor {
     }
   }
 
+  Future<dynamic> mergePdfs(List<String> pdfPaths, String destPath) async {
+    try {
+      dynamic file = await _channel.invokeMethod('mergePdfs', <String, dynamic>{
+        'listOfPdf': pdfPaths,
+        'destPath': destPath,
+      });
+      return file;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return null;
+    }
+  }
+
+  Future<dynamic> getPages(String pdfPath) async {
+    try {
+      dynamic pageList =
+          await _channel.invokeListMethod("getPages", <String, dynamic>{
+        'docPath': pdfPath,
+      });
+      return pageList;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return null;
+    }
+  }
+
+  Future<dynamic> splitPdfs(String pdfPath, List<int> selectedIndex,
+      List<String> filePathsToStore) async {
+    try {
+      dynamic pageList =
+          await _channel.invokeListMethod('splitPdf', <String, dynamic>{
+        'documentPath': pdfPath,
+        'selectedIndex': selectedIndex,
+        'filePathsToStore': filePathsToStore
+      });
+      return pageList;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return null;
+    }
+  }
+
   /// Generates a PDF from HTML URI.
   /// [htmlUri]: The URI to the HTML file to be converted to PDF. The URI can be for a local file or a remote file.
   /// [outPutFile]: The path to the output file.

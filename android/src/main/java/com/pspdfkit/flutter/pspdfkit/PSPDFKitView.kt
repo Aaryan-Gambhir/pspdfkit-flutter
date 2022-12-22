@@ -1,4 +1,4 @@
-package com.pspdfkit.flutter.pspdfkit
+ackage com.pspdfkit.flutter.pspdfkit
 
 import android.content.Context
 import android.content.MutableContextWrapper
@@ -82,16 +82,16 @@ internal class PSPDFKitView(
             }
         }
 
-        fragmentContainerView?.let {
-            it.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
-                override fun onViewAttachedToWindow(view: View?) {
+        fragmentContainerView.let {
+            it?.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(view: View) {
                   getFragmentActivity(context).supportFragmentManager.commit {
                         add(it.id, pdfUiFragment)
                         setReorderingAllowed(true)
                     }
                 }
 
-                override fun onViewDetachedFromWindow(view: View?) {
+                override fun onViewDetachedFromWindow(view: View) {
                     getFragmentActivity(context).supportFragmentManager.commit {
                         remove(pdfUiFragment)
                         setReorderingAllowed(true)
@@ -166,6 +166,7 @@ internal class PSPDFKitView(
                     call.argument("fullyQualifiedName"),
                     "Fully qualified name"
                 )
+
                 // noinspection checkResult
                 document.formProvider
                     .getFormElementWithNameAsync(fullyQualifiedName)
@@ -419,3 +420,4 @@ class PSPDFKitViewFactory(
         )
     }
 }
+
