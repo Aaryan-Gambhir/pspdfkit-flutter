@@ -1,4 +1,4 @@
-ackage com.pspdfkit.flutter.pspdfkit
+package com.pspdfkit.flutter.pspdfkit
 
 import android.content.Context
 import android.content.MutableContextWrapper
@@ -420,4 +420,3 @@ class PSPDFKitViewFactory(
         )
     }
 }
-
