@@ -2,11 +2,14 @@ package com.pspdfkit.flutter.pspdfkit.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.PdfDocumentLoader;
 import com.pspdfkit.document.processor.NewPage;
+import com.pspdfkit.document.processor.PageImage;
+import com.pspdfkit.document.processor.PagePosition;
 import com.pspdfkit.document.processor.PdfProcessor;
 import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.utils.Size;
@@ -19,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import io.reactivex.disposables.Disposable;
 
 public class PdfUtils {
     public static String getThumbnail(String documentPath,Context context,String thumbnailPath){
@@ -82,6 +87,30 @@ public class PdfUtils {
       return pageList;
     }
 
+    public static String addPages(String docuPath,Context context,ArrayList<byte[]> imageData,String destPath){
+
+        Uri uri=Uri.fromFile(new File(docuPath));
+        PdfDocument newDoc=null;
+        try {
+             newDoc = PdfDocumentLoader.openDocument(context,uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        final PdfProcessorTask task = PdfProcessorTask.fromDocument(newDoc);
+
+    for(int i =0; i<imageData.size();i++){
+        final Bitmap bitmap = BitmapFactory.decodeByteArray(imageData.get(i),0,imageData.get(i).length);
+        task.addNewPage(
+                NewPage.emptyPage(NewPage.PAGE_SIZE_A4)
+                        .withPageItem(new PageImage(bitmap, PagePosition.CENTER))
+                        .build(),newDoc .getPageCount());
+    }
+
+// Save it to a new document.
+        final File outputFile = new File(destPath);
+        PdfProcessor.processDocumentAsync(task, outputFile).subscribe();
+        return destPath;
+    }
     public static ArrayList<String> splitPdfs(Context context,ArrayList<Integer> pagesToSplit,Uri documentUri,ArrayList<String> destFilePaths){
         Set<Integer> pageSet = new HashSet<>(pagesToSplit);
         PdfDocument originalDocument = null;
@@ -142,5 +171,23 @@ public class PdfUtils {
     public static Uri convertPathToUri(String pdfString){
         Uri uri=Uri.fromFile(new File(pdfString));
         return uri;
+    }
+
+    public static void removePages(String documentPath,ArrayList<Integer> pagesToRemove,Context context,String destPath){
+        Uri uri = convertPathToUri(documentPath);
+
+        final Set<Integer> indexToRemove = new HashSet<>(pagesToRemove);
+        PdfDocument originalDocument = null;
+        try {
+            originalDocument = PdfDocumentLoader.openDocument(context,uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        PdfProcessorTask originalDocumentTask =
+                PdfProcessorTask.fromDocument(originalDocument).removePages(indexToRemove);
+// Process to an output document.
+        File outputFile = new File(destPath);
+        PdfProcessor.processDocument(originalDocumentTask, outputFile);
+
     }
 }

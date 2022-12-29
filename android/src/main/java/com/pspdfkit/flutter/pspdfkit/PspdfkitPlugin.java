@@ -197,6 +197,13 @@ public class PspdfkitPlugin
                 final String thumbnailPath=call.argument("thumbnailPath");
                 String thumbnailData = getThumbnail(path,activityPluginBinding.getActivity(),thumbnailPath);
                 result.success(thumbnailData);
+
+            case "addPages":
+                final String dPath= call.argument("documentPath");
+                final String destiPath=call.argument("destPath");
+                final ArrayList<byte[]> imageList=call.argument("pagesToAdd");
+                String finalPath=PdfUtils.addPages(dPath,activityPluginBinding.getActivity(),imageList,destiPath);
+                result.success(finalPath);
             case "mergePdfs":
 
                 final List<String> pdfPaths= call.argument("listOfPdf");
@@ -221,7 +228,12 @@ public class PspdfkitPlugin
                 ArrayList<byte[]> pageList= PdfUtils.getPages(docuPath,activityPluginBinding.getActivity());
                 result.success(pageList);
                 break;
-
+            case "deletePages":
+                final String documentPathPath2=call.argument("documentPath");
+                final ArrayList<Integer> pagesToRemove=call.argument("pagesToRemove");
+                final String destPath = call.argument("destPath");
+                PdfUtils.removePages(documentPathPath2,pagesToRemove,activityPluginBinding.getActivity(),destPath);
+                result.success(true);
             case "setLicenseKeys":
                 String androidLicenseKey = call.argument("androidLicenseKey");
                 requireNotNullNotEmpty(androidLicenseKey, "Android License key");

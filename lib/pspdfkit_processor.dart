@@ -75,6 +75,42 @@ class PspdfkitProcessor {
     }
   }
 
+  Future<bool> deletePages(String documentPath, List<int> pagesToDelete,
+      String destinationPath) async {
+    try {
+      bool deleteStatus =
+          await _channel.invokeMethod('deletePages', <String, dynamic>{
+        'documentPath': documentPath,
+        'pagesToRemove': pagesToDelete,
+        'destPath': destinationPath,
+      });
+      return deleteStatus;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return false;
+    }
+  }
+
+  Future<dynamic> addPage(
+      List<dynamic> imageList, String docPath, String destinationPath) async {
+    try {
+      String documentPath =
+          await _channel.invokeMethod('addPages', <String, dynamic>{
+        'documentPath': docPath,
+        'pagesToAdd': imageList,
+        'destPath': destinationPath,
+      });
+      return documentPath;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return e;
+    }
+  }
+
   Future<dynamic> mergePdfs(List<String> pdfPaths, String destPath) async {
     try {
       dynamic file = await _channel.invokeMethod('mergePdfs', <String, dynamic>{
@@ -86,7 +122,7 @@ class PspdfkitProcessor {
       if (kDebugMode) {
         print(e);
       }
-      return null;
+      return e;
     }
   }
 
@@ -101,7 +137,7 @@ class PspdfkitProcessor {
       if (kDebugMode) {
         print(e);
       }
-      return null;
+      return e;
     }
   }
 
@@ -119,7 +155,7 @@ class PspdfkitProcessor {
       if (kDebugMode) {
         print(e);
       }
-      return null;
+      return e;
     }
   }
 
@@ -135,7 +171,7 @@ class PspdfkitProcessor {
       if (kDebugMode) {
         print(e);
       }
-      return "";
+      return e;
     }
   }
 
