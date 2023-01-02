@@ -3,8 +3,10 @@ package com.pspdfkit.flutter.pspdfkit.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 
+import com.pspdfkit.configuration.rendering.PageRenderConfiguration;
 import com.pspdfkit.document.PdfDocument;
 import com.pspdfkit.document.PdfDocumentLoader;
 import com.pspdfkit.document.processor.NewPage;
@@ -14,6 +16,8 @@ import com.pspdfkit.document.processor.PdfProcessor;
 import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.utils.Size;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -22,10 +26,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.disposables.Disposable;
 
 public class PdfUtils {
+
     public static String getThumbnail(String documentPath,Context context,String thumbnailPath){
         PdfDocument newDoc = null;
         Uri uri=convertPathToUri(documentPath);
@@ -63,6 +72,7 @@ public class PdfUtils {
         }
         return fileA.getPath();
     }
+
     public static  ArrayList<byte[]> getPages(String docuPath,Context context){
         PdfDocument newDoc = null;
         ArrayList<byte[]> pageList =new ArrayList();
@@ -72,7 +82,6 @@ public class PdfUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         int pageCount = newDoc.getPageCount();
         for(int pageIndex = 0;pageIndex < pageCount;pageIndex++)
         // Page size is in PDF points (not pixels).
@@ -84,32 +93,39 @@ public class PdfUtils {
             pageList.add(ImageUtils.convert(pageBitmap));
         }
         // We define a target width for the resulting bitmap and use it to calculate the final height.
-      return pageList;
+        return pageList;
     }
 
-    public static String addPages(String docuPath,Context context,ArrayList<byte[]> imageData,String destPath){
+
+    public  static ArrayList<byte[]>  addPages(String docuPath,Context context,ArrayList<byte[]> imageData,String destPath){
 
         Uri uri=Uri.fromFile(new File(docuPath));
         PdfDocument newDoc=null;
+        ArrayList<byte[]> allPages=getPages(docuPath,context);
+
         try {
-             newDoc = PdfDocumentLoader.openDocument(context,uri);
+            newDoc = PdfDocumentLoader.openDocument(context,uri);
         } catch (IOException e) {
             e.printStackTrace();
         }
         final PdfProcessorTask task = PdfProcessorTask.fromDocument(newDoc);
 
-    for(int i =0; i<imageData.size();i++){
-        final Bitmap bitmap = BitmapFactory.decodeByteArray(imageData.get(i),0,imageData.get(i).length);
-        task.addNewPage(
-                NewPage.emptyPage(NewPage.PAGE_SIZE_A4)
-                        .withPageItem(new PageImage(bitmap, PagePosition.CENTER))
-                        .build(),newDoc .getPageCount());
-    }
+          for(int i =0; i<imageData.size();i++){
+            final Bitmap bitmap = BitmapFactory.decodeByteArray(imageData.get(i),0,imageData.get(i).length);
+            final Size pageSize = newDoc.getPageSize(0);
+            Bitmap resizedBitmap=getResizedBitmap(bitmap,pageSize);
+            task.addNewPage(
+                    NewPage.emptyPage(NewPage.PAGE_SIZE_A4)
+                            .withPageItem(new PageImage(resizedBitmap, PagePosition.CENTER))
+                            .build(),newDoc .getPageCount());
+            allPages.add(ImageUtils.convert(resizedBitmap));
+        }
+
 
 // Save it to a new document.
         final File outputFile = new File(destPath);
         PdfProcessor.processDocumentAsync(task, outputFile).subscribe();
-        return destPath;
+        return allPages;
     }
     public static ArrayList<String> splitPdfs(Context context,ArrayList<Integer> pagesToSplit,Uri documentUri,ArrayList<String> destFilePaths){
         Set<Integer> pageSet = new HashSet<>(pagesToSplit);
@@ -141,6 +157,35 @@ public class PdfUtils {
         return pathList;
     }
 
+    private static Bitmap getResizedBitmap(Bitmap image,Size size) {
+        double imageHeight = image.getHeight();
+        double imageWidth = image.getWidth();
+        double shrinkFactor;
+        if(imageWidth > size.width){
+            shrinkFactor = imageWidth / size.width;
+            imageWidth = size.width;
+            imageHeight = imageHeight / shrinkFactor;
+        }
+        if (imageHeight > size.height ) {
+            shrinkFactor = imageHeight / size.height;
+            imageHeight = size.height;
+            imageWidth = imageWidth / shrinkFactor;
+        }
+        // recreate the new Bitmap
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(image,(int)imageWidth,(int)imageHeight,false);
+        return resizedBitmap;
+    }
+    public  static int getPageCount(String path,Context context){
+        PdfDocument pdfDocument=null;
+        try{
+            pdfDocument =  PdfDocumentLoader.openDocument(context,
+                    convertPathToUri(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pdfDocument.getPageCount();
+        return  pdfDocument.getPageCount();
+    }
     public static String mergePdf(List<String> pdfPaths,Context context,String destinationPath){
         final List<PdfDocument> documents = new ArrayList<>();
         for(String path : pdfPaths){
