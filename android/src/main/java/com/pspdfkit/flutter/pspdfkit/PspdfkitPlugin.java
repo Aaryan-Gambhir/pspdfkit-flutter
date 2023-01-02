@@ -8,7 +8,6 @@
  */
 package com.pspdfkit.flutter.pspdfkit;
 
-import static android.content.ContentValues.TAG;
 import static com.pspdfkit.flutter.pspdfkit.util.PdfUtils.convertPathToUri;
 import static com.pspdfkit.flutter.pspdfkit.util.PdfUtils.getThumbnail;
 import static com.pspdfkit.flutter.pspdfkit.util.PdfUtils.mergePdf;
@@ -20,16 +19,9 @@ import static com.pspdfkit.flutter.pspdfkit.util.Utilities.isImageDocument;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Log;
 
@@ -40,26 +32,18 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import com.pspdfkit.PSPDFKit;
-import com.pspdfkit.document.DocumentSource;
 import com.pspdfkit.document.PdfDocument;
-import com.pspdfkit.document.PdfDocumentLoader;
-import com.pspdfkit.document.editor.PdfDocumentEditor;
-import com.pspdfkit.document.editor.PdfDocumentEditorFactory;
 import com.pspdfkit.document.formatters.DocumentJsonFormatter;
-import com.pspdfkit.document.processor.NewPage;
-import com.pspdfkit.document.processor.PdfProcessor;
-import com.pspdfkit.document.processor.PdfProcessorTask;
 import com.pspdfkit.exceptions.PSPDFKitException;
 import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
-import com.pspdfkit.flutter.pspdfkit.util.ImageUtils;
 import com.pspdfkit.flutter.pspdfkit.util.PdfUtils;
+import com.pspdfkit.flutter.pspdfkit.util.getPages;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
 import com.pspdfkit.forms.TextFormElement;
 import com.pspdfkit.ui.PdfActivityIntentBuilder;
-import com.pspdfkit.utils.Size;
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -74,16 +58,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -202,10 +182,12 @@ public class PspdfkitPlugin
                 final String dPath= call.argument("documentPath");
                 final String destiPath=call.argument("destPath");
                 final ArrayList<byte[]> imageList=call.argument("pagesToAdd");
-                String finalPath=PdfUtils.addPages(dPath,activityPluginBinding.getActivity(),imageList,destiPath);
-                result.success(finalPath);
+                ArrayList<byte[]> newPages= null;
+                newPages = PdfUtils.addPages(dPath,activityPluginBinding.getActivity(),imageList,destiPath);
+                Map  <String ,ArrayList<byte[]>> resultMap=new HashMap<>();
+                resultMap.put(destiPath,newPages);
+                result.success(resultMap);
             case "mergePdfs":
-
                 final List<String> pdfPaths= call.argument("listOfPdf");
                 final String filePath=call.argument("destPath");
                 String resultPath=mergePdf(pdfPaths,activityPluginBinding.getActivity(),filePath);
@@ -213,7 +195,6 @@ public class PspdfkitPlugin
                 break;
 
             case "splitPdf":
-
                 final String docPath= call.argument("documentPath");
                 final ArrayList<Integer> pagesToSplit = call.argument("selectedIndex");
                 final ArrayList<String> destFilePathList = call.argument("filePathsToStore");
@@ -223,10 +204,15 @@ public class PspdfkitPlugin
                 break;
 
             case "getPages":
-
                 final String docuPath= call.argument("docPath");
-                ArrayList<byte[]> pageList= PdfUtils.getPages(docuPath,activityPluginBinding.getActivity());
-                result.success(pageList);
+//              pageList = PdfUtils.getPages(docuPath,activityPluginBinding.getActivity());
+                new getPages(activityPluginBinding.getActivity(),result).execute(docuPath);
+                break;
+
+            case "getPageCount":
+                final String documPath= call.argument("docPath");
+                final int pgCount=PdfUtils.getPageCount(documPath,activityPluginBinding.getActivity());
+                result.success(pgCount);
                 break;
             case "deletePages":
                 final String documentPathPath2=call.argument("documentPath");
@@ -234,6 +220,7 @@ public class PspdfkitPlugin
                 final String destPath = call.argument("destPath");
                 PdfUtils.removePages(documentPathPath2,pagesToRemove,activityPluginBinding.getActivity(),destPath);
                 result.success(true);
+
             case "setLicenseKeys":
                 String androidLicenseKey = call.argument("androidLicenseKey");
                 requireNotNullNotEmpty(androidLicenseKey, "Android License key");

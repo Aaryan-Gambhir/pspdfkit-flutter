@@ -96,7 +96,7 @@ class PspdfkitProcessor {
   Future<dynamic> addPage(
       List<dynamic> imageList, String docPath, String destinationPath) async {
     try {
-      String documentPath =
+      dynamic documentPath =
           await _channel.invokeMethod('addPages', <String, dynamic>{
         'documentPath': docPath,
         'pagesToAdd': imageList,
@@ -133,6 +133,21 @@ class PspdfkitProcessor {
         'docPath': pdfPath,
       });
       return pageList;
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print(e);
+      }
+      return e;
+    }
+  }
+
+  Future<dynamic> getPageCount(String pdfPath) async {
+    try {
+      dynamic pageCount =
+          await _channel.invokeMethod('getPageCount', <String, dynamic>{
+        'docPath': pdfPath,
+      });
+      return pageCount;
     } on PlatformException catch (e) {
       if (kDebugMode) {
         print(e);
