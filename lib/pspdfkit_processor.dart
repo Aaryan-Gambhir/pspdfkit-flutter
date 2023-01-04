@@ -85,7 +85,7 @@ class PspdfkitProcessor {
         'destPath': destinationPath,
       });
       return deleteStatus;
-    } on PlatformException catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
@@ -118,7 +118,7 @@ class PspdfkitProcessor {
         'destPath': destPath,
       });
       return file;
-    } on PlatformException catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
@@ -133,7 +133,7 @@ class PspdfkitProcessor {
         'docPath': pdfPath,
       });
       return pageList;
-    } on PlatformException catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
@@ -148,7 +148,7 @@ class PspdfkitProcessor {
         'docPath': pdfPath,
       });
       return pageCount;
-    } on PlatformException catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
@@ -166,7 +166,7 @@ class PspdfkitProcessor {
         'filePathsToStore': filePathsToStore
       });
       return pageList;
-    } on PlatformException catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
@@ -182,11 +182,11 @@ class PspdfkitProcessor {
         'thumbnailPath': thumbnailPath,
       });
       return thumbnail;
-    } on PlatformException catch (e) {
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
-      return e;
+      return null;
     }
   }
 

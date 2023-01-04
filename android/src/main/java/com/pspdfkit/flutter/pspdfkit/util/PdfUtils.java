@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.util.Base64;
+import android.util.Log;
 
 import com.pspdfkit.configuration.rendering.PageRenderConfiguration;
 import com.pspdfkit.document.PdfDocument;
@@ -31,6 +33,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.flutter.plugin.common.MethodChannel;
 import io.reactivex.disposables.Disposable;
 
 public class PdfUtils {
@@ -97,7 +100,7 @@ public class PdfUtils {
     }
 
 
-    public  static ArrayList<byte[]>  addPages(String docuPath,Context context,ArrayList<byte[]> imageData,String destPath){
+    public  static ArrayList<byte[]>  addPages(String docuPath, Context context, ArrayList<byte[]> imageData, String destPath, MethodChannel.Result result){
 
         Uri uri=Uri.fromFile(new File(docuPath));
         PdfDocument newDoc=null;
@@ -109,11 +112,15 @@ public class PdfUtils {
             e.printStackTrace();
         }
         final PdfProcessorTask task = PdfProcessorTask.fromDocument(newDoc);
-
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+        options.inDither = false;
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
           for(int i =0; i<imageData.size();i++){
-            final Bitmap bitmap = BitmapFactory.decodeByteArray(imageData.get(i),0,imageData.get(i).length);
+            final Bitmap bitmap = BitmapFactory.decodeByteArray(imageData.get(i),0,imageData.get(i).length,options);
             final Size pageSize = newDoc.getPageSize(0);
             Bitmap resizedBitmap=getResizedBitmap(bitmap,pageSize);
+          
             task.addNewPage(
                     NewPage.emptyPage(NewPage.PAGE_SIZE_A4)
                             .withPageItem(new PageImage(resizedBitmap, PagePosition.CENTER))

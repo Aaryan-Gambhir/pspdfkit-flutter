@@ -40,21 +40,25 @@ public class getPages extends AsyncTask<String,Void,ArrayList<byte[]>> {
         };
         return runnable;
     }
-
-
-
     @Override
     protected ArrayList<byte[]> doInBackground(String... docuPath) {
         PdfDocument newDoc = null;
         final ArrayList<byte[]> pageList = new ArrayList<>();
+        int pageCount =0;
         try {
             Uri uri=Uri.fromFile(new File(docuPath[0]));
             newDoc = PdfDocumentLoader.openDocument(context,uri);
         } catch (IOException e) {
-            e.printStackTrace();
+            return pageList;
         }
-        int pageCount = newDoc.getPageCount();
-         CountDownLatch countDownLatch = new CountDownLatch(pageCount);
+        try {
+            assert newDoc != null;
+            pageCount = newDoc.getPageCount();
+        }
+        catch (Exception e){
+            return pageList;
+        }
+            CountDownLatch countDownLatch = new CountDownLatch(pageCount);
         for(int pageIndex = 0;pageIndex < pageCount;pageIndex++)
         // Page size is in PDF points (not pixels).
         {
@@ -63,7 +67,7 @@ public class getPages extends AsyncTask<String,Void,ArrayList<byte[]>> {
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            return pageList;
         }
         return pageList;
     }

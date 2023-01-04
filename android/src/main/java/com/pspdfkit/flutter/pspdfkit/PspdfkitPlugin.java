@@ -183,7 +183,7 @@ public class PspdfkitPlugin
                 final String destiPath=call.argument("destPath");
                 final ArrayList<byte[]> imageList=call.argument("pagesToAdd");
                 ArrayList<byte[]> newPages= null;
-                newPages = PdfUtils.addPages(dPath,activityPluginBinding.getActivity(),imageList,destiPath);
+                newPages = PdfUtils.addPages(dPath,activityPluginBinding.getActivity(),imageList,destiPath,result);
                 Map  <String ,ArrayList<byte[]>> resultMap=new HashMap<>();
                 resultMap.put(destiPath,newPages);
                 result.success(resultMap);
