@@ -51,22 +51,22 @@ public class getThumbnail extends AsyncTask<String,Void,String> {
         try {
             fileStream = new FileOutputStream(fileA);
         } catch (FileNotFoundException e) {
-            result.success("");
+            result.success(null);
         }
         try {
 
             fileStream.write(ImageUtils.convert(pageBitmap));
         } catch (FileNotFoundException e) {
-            result.success("");
+            result.success(null);
             return "";
         } catch (IOException e) {
-            result.success("");
+            result.success(null);
             return "";
         }finally {
             try {
                 fileStream.close();
             } catch (IOException e) {
-                result.success("");
+                result.success(null);
             }
         }
        return fileA.getPath();
