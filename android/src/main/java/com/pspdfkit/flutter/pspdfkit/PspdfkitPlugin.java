@@ -39,6 +39,7 @@ import com.pspdfkit.flutter.pspdfkit.pdfgeneration.PdfPageAdaptor;
 import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider;
 import com.pspdfkit.flutter.pspdfkit.util.PdfUtils;
 import com.pspdfkit.flutter.pspdfkit.util.getPages;
+import com.pspdfkit.flutter.pspdfkit.util.getThumbnail;
 import com.pspdfkit.forms.ChoiceFormElement;
 import com.pspdfkit.forms.EditableButtonFormElement;
 import com.pspdfkit.forms.SignatureFormElement;
@@ -172,11 +173,12 @@ public class PspdfkitPlugin
                     result.error("PSPDFKitException", e.getMessage(), null);
                 }
                 break;
+
             case "getThumbnail":
                 final String path= call.argument("documentPath");
                 final String thumbnailPath=call.argument("thumbnailPath");
-                String thumbnailData = getThumbnail(path,activityPluginBinding.getActivity(),thumbnailPath);
-                result.success(thumbnailData);
+                new getThumbnail(activityPluginBinding.getActivity(),result).execute(path,thumbnailPath);
+                break;
 
             case "addPages":
                 final String dPath= call.argument("documentPath");
