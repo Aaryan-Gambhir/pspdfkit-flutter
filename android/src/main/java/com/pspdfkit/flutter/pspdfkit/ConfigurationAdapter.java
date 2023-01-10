@@ -377,6 +377,7 @@ class ConfigurationAdapter {
                 configuration.layoutMode(PageLayoutMode.SINGLE);
                 break;
             case PAGE_MODE_DOUBLE:
+
                 configuration.layoutMode(PageLayoutMode.DOUBLE);
                 break;
             default:

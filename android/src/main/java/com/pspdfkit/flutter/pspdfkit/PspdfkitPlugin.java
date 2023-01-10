@@ -270,7 +270,6 @@ public class PspdfkitPlugin
                                     .passwords(configurationAdapter.getPassword())
                                     .build();
                 }
-
                 activity.startActivity(intent);
                 break;
             case "checkPermission":
@@ -496,6 +495,7 @@ public class PspdfkitPlugin
                         .subscribe(result::success);
 
                 break;
+
             case "getTemporaryDirectory":
                 result.success(getTemporaryDirectory(activity));
                 break;
@@ -526,6 +526,10 @@ public class PspdfkitPlugin
                         options,
                         result
                 );
+                break;
+            }
+            case "activateGridView":{
+
                 break;
             }
             case "generatePdfFromHtmlUri": {

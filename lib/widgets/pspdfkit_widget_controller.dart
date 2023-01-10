@@ -68,6 +68,13 @@ class PspdfkitWidgetController {
         'processingMode': processingMode,
         'destinationPath': destinationPath
       });
+  Future<void> activateGridView() async =>
+      _channel.invokeMethod('activateGrid');
+
+  Future<dynamic> getSelectedPages() async {
+    var selectedPages = await _channel.invokeMethod('getSelectedPages');
+    return selectedPages;
+  }
 
   /// Imports annotations from the XFDF file at the given path.
   Future<bool?> importXfdf(String xfdfPath) async => _channel

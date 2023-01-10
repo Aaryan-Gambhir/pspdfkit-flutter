@@ -36,43 +36,32 @@ public class getThumbnail extends AsyncTask<String,Void,String> {
     @Override
     protected String doInBackground(String... docuPath) {
         PdfDocument newDoc = null;
-        Uri uri=convertPathToUri(docuPath[0]);
         try {
+            Uri uri=convertPathToUri(docuPath[0]);
+            File fileA=new File(docuPath[1]);
             newDoc = PdfDocumentLoader.openDocument(context,uri);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         final Size pageSize = newDoc.getPageSize(0);
         final int width = 840;
         final int height = (int) (pageSize.height * (width / pageSize.width));
         Bitmap pageBitmap = newDoc.renderPageToBitmap(context, 0, width, height);
-        File fileA=new File(docuPath[1]);
         FileOutputStream fileStream = null;
-        try {
-            fileStream = new FileOutputStream(fileA);
-        } catch (FileNotFoundException e) {
+        fileStream = new FileOutputStream(fileA);
+        fileStream.write(ImageUtils.convert(pageBitmap));
+        return fileA.getPath();
+        } catch (Exception e) {
             result.success(null);
+            return "";
         }
-        try {
 
-            fileStream.write(ImageUtils.convert(pageBitmap));
-        } catch (FileNotFoundException e) {
-            result.success(null);
-            return "";
-        } catch (IOException e) {
-            result.success(null);
-            return "";
-        }finally {
-            try {
-                fileStream.close();
-            } catch (IOException e) {
-                result.success(null);
-            }
-        }
-       return fileA.getPath();
     }
 
     protected void onPostExecute(String data) {
-        result.success(data);
+        if(data.isEmpty()){
+            result.success(null);
+        }
+        else{
+            result.success(data);
+        }
+
     }
 }

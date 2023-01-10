@@ -1,13 +1,20 @@
 package com.pspdfkit.flutter.pspdfkit;
 
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.pspdfkit.configuration.PdfConfiguration;
 import com.pspdfkit.document.PdfDocument;
+import com.pspdfkit.listeners.OnVisibilityChangedListener;
 import com.pspdfkit.ui.PdfActivity;
+import com.pspdfkit.ui.PdfThumbnailGrid;
+import com.pspdfkit.ui.toolbar.ContextualToolbar;
+import com.pspdfkit.ui.toolbar.ToolbarCoordinatorLayout;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -16,7 +23,7 @@ import io.flutter.plugin.common.MethodChannel.Result;
  * For communication with the PSPDFKit plugin, we keep a static reference to the current
  * activity.
  */
-public class FlutterPdfActivity extends PdfActivity {
+public class FlutterPdfActivity extends PdfActivity implements ToolbarCoordinatorLayout.OnContextualToolbarLifecycleListener{
 
     @Nullable private static FlutterPdfActivity currentActivity;
     @NonNull private static final AtomicReference<Result> loadedDocumentResult = new AtomicReference<>();
@@ -29,6 +36,8 @@ public class FlutterPdfActivity extends PdfActivity {
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
         bindActivity();
+        PdfThumbnailGrid pdfGrid= null;
+
     }
 
     @Override
@@ -77,5 +86,20 @@ public class FlutterPdfActivity extends PdfActivity {
     @Nullable
     public static FlutterPdfActivity getCurrentActivity() {
         return currentActivity;
+    }
+
+    @Override
+    public void onPrepareContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+
+    }
+
+    @Override
+    public void onDisplayContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+
+    }
+
+    @Override
+    public void onRemoveContextualToolbar(@NonNull ContextualToolbar contextualToolbar) {
+
     }
 }

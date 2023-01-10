@@ -156,7 +156,7 @@ class PspdfkitProcessor {
     }
   }
 
-  Future<dynamic> splitPdfs(String pdfPath, List<int> selectedIndex,
+  Future<dynamic> splitPdfs(String pdfPath, dynamic selectedIndex,
       List<String> filePathsToStore) async {
     try {
       dynamic pageList =

@@ -1,27 +1,25 @@
 package com.pspdfkit.flutter.pspdfkit
 
+import CustomUiFragment
 import android.content.Context
 import android.content.MutableContextWrapper
+import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.view.View
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.commit
+import com.pspdfkit.document.PdfDocumentLoader
+import com.pspdfkit.document.editor.PdfDocumentEditorFactory
 import com.pspdfkit.document.formatters.DocumentJsonFormatter
-import com.pspdfkit.flutter.pspdfkit.util.DocumentJsonDataProvider
+import com.pspdfkit.flutter.pspdfkit.util.*
 import com.pspdfkit.flutter.pspdfkit.util.Preconditions.requireNotNullNotEmpty
-import com.pspdfkit.flutter.pspdfkit.util.addFileSchemeIfMissing
-import com.pspdfkit.flutter.pspdfkit.util.areValidIndexes
-import com.pspdfkit.flutter.pspdfkit.util.isImageDocument
 import com.pspdfkit.forms.ChoiceFormElement
 import com.pspdfkit.forms.EditableButtonFormElement
 import com.pspdfkit.forms.SignatureFormElement
 import com.pspdfkit.forms.TextFormElement
+import com.pspdfkit.ui.PSPDFKitViews
 import com.pspdfkit.ui.PdfUiFragment
-import com.pspdfkit.document.processor.PdfProcessor
-import com.pspdfkit.document.processor.PdfProcessorTask
-import com.pspdfkit.document.processor.NewPage
-import com.pspdfkit.document.processor.PagePattern
 import com.pspdfkit.ui.PdfUiFragmentBuilder
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
@@ -34,17 +32,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.File
-import android.app.Activity
-import android.content.Intent
-import android.graphics.BitmapFactory
-import android.graphics.RectF
-import android.os.Bundle
-import com.pspdfkit.configuration.activity.PdfActivityConfiguration
-import com.pspdfkit.document.processor.PageImage
-import com.pspdfkit.ui.PdfActivity
-import com.pspdfkit.utils.Size
-import java.io.FileInputStream
 
 internal class PSPDFKitView(
     val context: Context,
@@ -75,8 +62,10 @@ internal class PSPDFKitView(
                 PdfUiFragmentBuilder.fromImageUri(context, uri).configuration(pdfConfiguration)
                     .build()
             } else {
+
                 PdfUiFragmentBuilder.fromUri(context, uri)
                     .configuration(pdfConfiguration)
+                        .fragmentClass(CustomUiFragment::class.java)
                     .passwords(password)
                     .build()
             }
@@ -374,6 +363,24 @@ internal class PSPDFKitView(
                         )
                     })
             }
+            "getSelectedPages"->{
+                var data:Set<Int>?  =pdfUiFragment.pspdfKitViews.thumbnailGridView?.selectedPages
+                var arrayList=ArrayList<Int?>(data);
+                result.success(arrayList)
+            }
+            "activateGrid"->{
+
+                pdfUiFragment.pspdfKitViews.toggleView(PSPDFKitViews.Type.VIEW_THUMBNAIL_GRID)
+                result.success(true)
+            }
+            "AddPage"->{
+
+                var document : com.pspdfkit.document.PdfDocument = PdfDocumentLoader.openDocument(context,
+                        PdfUtils.convertPathToUri(call.argument("documentPath")))
+                val documentEditor = PdfDocumentEditorFactory.createForDocument(document)
+//                documentEditor.addPage()
+            }
+
             "save" -> {
                 // noinspection checkResult
                 document.saveIfModifiedAsync()
